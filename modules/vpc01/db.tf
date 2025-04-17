@@ -21,7 +21,7 @@ resource "aws_subnet" "vpc01_db_az2" {
   }
 }
 
-# -- Subnet Group for DB
+# -- Subnetgroup for DB
 resource "aws_db_subnet_group" "default" {
     name       = "vpc01-db-subnet-group"
     subnet_ids = [aws_subnet.vpc01_db_az1.id, aws_subnet.vpc01_db_az2.id]
@@ -41,7 +41,17 @@ resource "aws_security_group" "db" {
         to_port     = 3306
         protocol    = "tcp"
         cidr_blocks = [var.private_subnet]
+        description = "Allow MySQL from private subnet"
     }
+    
+    ingress {
+        from_port   = 3306
+        to_port     = 3306
+        protocol    = "tcp"
+        security_groups = [aws_security_group.bastion.id]
+        description = "Allow MySQL from bastion host"
+    }
+
     tags = {
         Name = "db"
     }
@@ -64,4 +74,9 @@ resource "aws_db_instance" "default" {
     
     skip_final_snapshot = true
     multi_az            = true
+}
+
+# -- Output the RDS endpoint for reference
+output "rds_endpoint" {
+    value = aws_db_instance.default.endpoint
 }
