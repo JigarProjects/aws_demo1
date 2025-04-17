@@ -15,4 +15,7 @@ Prerequisite
 6. Run 'terraform plan' - to check what changes would be applied
 7. Run 'terraform apply' - to make changes
 
+=====
 This terraform role creates 2 VPCs
+
+In VPC-1, we will have voting application (the code for the app is located at https://github.com/JigarProjects/vote_cats_dogs )
