@@ -22,6 +22,36 @@ resource "aws_security_group" "bastion" {
     }
 }
 
+# -- IAM Role for Session Manager
+resource "aws_iam_role" "ssm_role" {
+    name = "ssm-role"
+
+    assume_role_policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+            {
+                Action = "sts:AssumeRole"
+                Effect = "Allow"
+                Principal = {
+                    Service = "ec2.amazonaws.com"
+                }
+            }
+        ]
+    })
+}
+
+# -- Attach SSM policy to the role
+resource "aws_iam_role_policy_attachment" "ssm_policy" {
+    role       = aws_iam_role.ssm_role.name
+    policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# -- Instance Profile for SSM
+resource "aws_iam_instance_profile" "ssm_profile" {
+    name = "ssm-profile"
+    role = aws_iam_role.ssm_role.name
+}
+
 # -- Bastion Host EC2 Instance
 resource "aws_instance" "bastion" {
     ami                    = "ami-07a6f770277670015" # Amazon Linux 2
@@ -39,6 +69,8 @@ resource "aws_instance" "bastion" {
         #!/bin/bash
         sudo yum update -y
         sudo yum install -y mysql
+        sudo systemctl enable amazon-ssm-agent
+        sudo systemctl start amazon-ssm-agent
     EOF
 }
 
