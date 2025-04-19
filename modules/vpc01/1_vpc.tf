@@ -32,32 +32,35 @@ resource "aws_route_table" "vpc01_public" {
   }
 }
 
-# -- Public Subnet
+# -- Public Subnets
 resource "aws_subnet" "vpc01_public" {
+  count                   = length(var.public_subnets)
   vpc_id                  = aws_vpc.vpc01.id
-  cidr_block              = var.public_subnet
-  availability_zone       = "us-east-1a"
+  cidr_block              = var.public_subnets[count.index]
+  availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "vpc01-public"
+    Name = "vpc01-public-${count.index + 1}"
   }
 }
 
-# -- Associate Public Route Table with Public Subnet
+# -- Associate Public Route Table with Public Subnets
 resource "aws_route_table_association" "vpc01_public" {
-  subnet_id      = aws_subnet.vpc01_public.id
+  count          = length(var.public_subnets)
+  subnet_id      = aws_subnet.vpc01_public[count.index].id
   route_table_id = aws_route_table.vpc01_public.id
 }
 
-# -- Private Subnet
+# -- Private Subnets
 resource "aws_subnet" "vpc01_private" {
+  count                   = length(var.private_subnets)
   vpc_id                  = aws_vpc.vpc01.id
-  cidr_block              = var.private_subnet
-  availability_zone       = "us-east-1b"
+  cidr_block              = var.private_subnets[count.index]
+  availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "vpc01-private"
+    Name = "vpc01-private-${count.index + 1}"
   }
 }

@@ -1,8 +1,9 @@
 # app vpc
 vpc01_cidr              = "10.0.0.0/16"
-vpc01_private_subnet    = "10.0.1.0/24"
-vpc01_public_subnet     = "10.0.2.0/24"
+vpc01_private_subnets   = ["10.0.1.0/24", "10.0.10.0/24"]
+vpc01_public_subnets    = ["10.0.2.0/24", "10.0.20.0/24"]
 vpc01_db_subnets        = ["10.0.3.0/24","10.0.4.0/24"]
+availability_zones      = ["us-east-1a", "us-east-1b"]
 
 # client vpc
 vpc02_cidr              = "11.0.0.0/16"

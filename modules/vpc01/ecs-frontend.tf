@@ -119,7 +119,7 @@ resource "aws_lb" "frontend" {
     internal           = false
     load_balancer_type = "application"
     security_groups    = [aws_security_group.alb.id]
-    subnets            = [aws_subnet.vpc01_public.id, "subnet-04fcdbc400d1cac44"]
+    subnets            = aws_subnet.vpc01_public[*].id
 
     enable_deletion_protection = false
 }
@@ -194,7 +194,7 @@ resource "aws_ecs_service" "frontend" {
     launch_type     = "FARGATE"
 
     network_configuration {
-        subnets          = [aws_subnet.vpc01_public.id, "subnet-04fcdbc400d1cac44"]
+        subnets          = aws_subnet.vpc01_public[*].id
         security_groups  = [aws_security_group.frontend.id]
         assign_public_ip = true
     }

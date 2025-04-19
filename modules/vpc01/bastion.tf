@@ -56,7 +56,7 @@ resource "aws_iam_instance_profile" "ssm_profile" {
 resource "aws_instance" "bastion" {
     ami                    = "ami-07a6f770277670015" # Amazon Linux 2
     instance_type          = "t2.micro"
-    subnet_id              = aws_subnet.vpc01_public.id
+    subnet_id              = aws_subnet.vpc01_public[0].id
     vpc_security_group_ids = [aws_security_group.bastion.id]
     iam_instance_profile   = aws_iam_instance_profile.ssm_profile.name
 

@@ -40,8 +40,8 @@ resource "aws_security_group" "db" {
         from_port   = 3306
         to_port     = 3306
         protocol    = "tcp"
-        cidr_blocks = [var.private_subnet]
-        description = "Allow MySQL from private subnet"
+        cidr_blocks = var.private_subnets
+        description = "Allow MySQL from private subnets"
     }
     
     ingress {
