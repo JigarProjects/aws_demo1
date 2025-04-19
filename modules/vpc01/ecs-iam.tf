@@ -56,3 +56,8 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_policy_attachment" {
     role       = aws_iam_role.ecs_execution_role.name
     policy_arn = aws_iam_policy.ecs_execution_policy.arn
 }
+
+resource "aws_iam_role_policy_attachment" "attach_cloudwatch_policy_ecs" {
+    role       = aws_iam_role.ecs_execution_role.name
+    policy_arn = aws_iam_policy.ecs_cloudwatch_policy.arn
+}

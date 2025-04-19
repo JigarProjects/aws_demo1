@@ -23,8 +23,7 @@ resource "aws_iam_policy" "backend_db_policy" {
                 "secretsmanager:DescribeSecret"
             ]
             Resource = [
-                aws_db_instance.default.master_user_secret[0].secret_arn,
-                "${aws_db_instance.default.master_user_secret[0].secret_arn}:*"
+                aws_db_instance.default.master_user_secret[0].secret_arn
             ]
         }]
     })
@@ -108,10 +107,9 @@ resource "aws_ecs_task_definition" "backend" {
         logConfiguration = {
             logDriver = "awslogs"
             options = {
-                "awslogs-group"         = "/ecs/backend"
+                "awslogs-group"         = aws_cloudwatch_log_group.backend.name
                 "awslogs-region"        = "us-east-1"
                 "awslogs-stream-prefix" = "ecs"
-                "awslogs-create-group"  = "true"
             }
         }
         environment = [
@@ -130,12 +128,10 @@ resource "aws_ecs_task_definition" "backend" {
             {
                 name  = "DB_NAME"
                 value = aws_db_instance.default.db_name
-            }
-        ]
-        secrets = [
+            },
             {
-                name      = "DB_PASSWORD"
-                valueFrom = "${aws_db_instance.default.master_user_secret[0].secret_arn}:password::"
+                name  = "DB_SECRET_NAME"
+                value = aws_db_instance.default.master_user_secret[0].secret_arn
             }
         ]
     }])
