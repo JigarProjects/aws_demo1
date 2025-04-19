@@ -18,6 +18,25 @@ resource "aws_internet_gateway" "vpc01" {
   }
 }
 
+# NAT Gateway
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  tags = {
+    Name = "vpc01-nat-eip"
+  }
+}
+
+resource "aws_nat_gateway" "vpc01" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.vpc01_public[0].id
+
+  tags = {
+    Name = "vpc01-nat"
+  }
+
+  depends_on = [aws_internet_gateway.vpc01]
+}
+
 # -- Public Route Table
 resource "aws_route_table" "vpc01_public" {
   vpc_id = aws_vpc.vpc01.id
@@ -29,6 +48,20 @@ resource "aws_route_table" "vpc01_public" {
 
   tags = {
     Name = "vpc01-public-rt"
+  }
+}
+
+# Private Route Table
+resource "aws_route_table" "vpc01_private" {
+  vpc_id = aws_vpc.vpc01.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.vpc01.id
+  }
+
+  tags = {
+    Name = "vpc01-private-rt"
   }
 }
 
@@ -63,4 +96,11 @@ resource "aws_subnet" "vpc01_private" {
   tags = {
     Name = "vpc01-private-${count.index + 1}"
   }
+}
+
+# Associate Private Route Table with Private Subnets
+resource "aws_route_table_association" "vpc01_private" {
+  count          = length(var.private_subnets)
+  subnet_id      = aws_subnet.vpc01_private[count.index].id
+  route_table_id = aws_route_table.vpc01_private.id
 }
