@@ -1,42 +1,6 @@
-# IAM Configuration
-resource "aws_iam_policy" "ecs_task_policy" {
-    name = "ecs-task-policy"
-    policy = jsonencode({
-        Version = "2012-10-17"
-        Statement = [
-            {
-                Effect = "Allow"
-                Action = [
-                    "ecr:GetAuthorizationToken",
-                    "ecr:BatchCheckLayerAvailability",
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:GetRepositoryPolicy",
-                    "ecr:DescribeRepositories",
-                    "ecr:ListImages",
-                    "ecr:DescribeImages",
-                    "ecr:BatchGetImage",
-                    "ecr:GetLifecyclePolicy",
-                    "ecr:GetLifecyclePolicyPreview",
-                    "ecr:ListTagsForResource",
-                    "ecr:DescribeImageScanFindings"
-                ]
-                Resource = "*"
-            },
-            {
-                Effect = "Allow"
-                Action = [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                    "logs:CreateLogGroup"
-                ]
-                Resource = "${aws_cloudwatch_log_group.frontend.arn}:*"
-            }
-        ]
-    })
-}
-
-resource "aws_iam_role" "ecs_task_role" {
-    name = "ecs-task-role"
+# Frontend Task Role
+resource "aws_iam_role" "frontend_task_role" {
+    name = "frontend-task-role"
     assume_role_policy = jsonencode({
         Version = "2012-10-17"
         Statement = [{
@@ -47,20 +11,16 @@ resource "aws_iam_role" "ecs_task_role" {
     })
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy" {
-    role       = aws_iam_role.ecs_task_role.name
-    policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
-    role       = aws_iam_role.ecs_task_role.name
-    policy_arn = aws_iam_policy.ecs_task_policy.arn
+# Attach common CloudWatch policy to frontend task role
+resource "aws_iam_role_policy_attachment" "frontend_cloudwatch_policy_attachment" {
+    role       = aws_iam_role.frontend_task_role.name
+    policy_arn = aws_iam_policy.ecs_cloudwatch_policy.arn
 }
 
 # Cloudwatch log
 resource "aws_cloudwatch_log_group" "frontend" {
     name              = "/ecs/frontend"
-    retention_in_days = 30
+    retention_in_days = 7
 }
 
 # ECS Cluster
@@ -159,8 +119,8 @@ resource "aws_ecs_task_definition" "frontend" {
     requires_compatibilities = ["FARGATE"]
     cpu                     = "256"
     memory                  = "512"
-    execution_role_arn      = aws_iam_role.ecs_task_role.arn
-    task_role_arn          = aws_iam_role.ecs_task_role.arn
+    execution_role_arn      = aws_iam_role.ecs_execution_role.arn
+    task_role_arn          = aws_iam_role.frontend_task_role.arn
     runtime_platform {
         operating_system_family = "LINUX"
         cpu_architecture        = "ARM64"
@@ -174,6 +134,12 @@ resource "aws_ecs_task_definition" "frontend" {
             containerPort = 3000
             protocol      = "tcp"
         }]
+        environment = [
+            {
+                name  = "MIDDLEWARE_URL"
+                value = "TEST:3001"
+            }
+        ]
         logConfiguration = {
             logDriver = "awslogs"
             options = {
