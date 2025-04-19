@@ -26,6 +26,8 @@ resource "aws_iam_policy" "ecs_cloudwatch_policy" {
             Resource = [
                 aws_cloudwatch_log_group.frontend.arn,
                 "${aws_cloudwatch_log_group.frontend.arn}:log-stream:*",
+                aws_cloudwatch_log_group.backend.arn,
+                "${aws_cloudwatch_log_group.backend.arn}:log-stream:*"
             ]
         }]
     })

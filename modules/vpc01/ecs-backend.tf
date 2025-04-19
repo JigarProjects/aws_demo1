@@ -156,4 +156,7 @@ resource "aws_ecs_service" "backend" {
         assign_public_ip = false
     }
 
+    service_registries {
+        registry_arn = aws_service_discovery_service.backend.arn
+    }
 }
