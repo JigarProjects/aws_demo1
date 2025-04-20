@@ -198,3 +198,29 @@ resource "aws_service_discovery_service" "backend" {
         failure_threshold = 1
     }
 }
+
+# Auto scaling
+resource "aws_appautoscaling_target" "frontend_scaling_target" {
+  max_capacity       = 4
+  min_capacity       = 1
+  resource_id        = "service/${aws_ecs_cluster.frontend_cluster.name}/${aws_ecs_service.frontend.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "frontend_scaling_policy" {
+  name               = "frontend_scaling_policy"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.frontend_scaling_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.frontend_scaling_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.frontend_scaling_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value = 70.0
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    scale_in_cooldown  = 300
+    scale_out_cooldown = 300
+  }
+}
