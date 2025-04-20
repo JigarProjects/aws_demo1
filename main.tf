@@ -9,4 +9,6 @@ module "vpc01" {
 module "vpc02" {
   source          = "./modules/vpc02"
   vpc_cidr        = var.vpc02_cidr
+  public_subnets  = var.vpc02_public_subnets
+  availability_zones = var.availability_zones
 }

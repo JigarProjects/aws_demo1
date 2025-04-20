@@ -35,3 +35,7 @@ variable "vpc02_cidr" {
     description = "The CIDR block for VPC 02"
     type = string
 }
+variable "vpc02_public_subnets" {
+    description = "List of CIDR blocks for VPC 02 public subnets"
+    type = list(string)
+}
