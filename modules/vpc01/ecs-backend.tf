@@ -98,7 +98,7 @@ resource "aws_ecs_task_definition" "backend" {
 
     container_definitions = jsonencode([{
         name      = "backend"
-        image     = "934433567703.dkr.ecr.us-east-1.amazonaws.com/vote-backend:latest"
+        image     = "934433567703.dkr.ecr.us-east-1.amazonaws.com/vote-api:latest"
         essential = true
         portMappings = [{
             containerPort = 3001
