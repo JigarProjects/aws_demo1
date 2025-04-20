@@ -66,7 +66,27 @@ resource "aws_security_group" "backend" {
         from_port       = 3001
         to_port         = 3001
         protocol        = "tcp"
-        security_groups = [aws_security_group.frontend.id]
+        security_groups = [aws_security_group.backend_lb.id]
+    }
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "backend_lb" {
+    name        = "backend-lb-sg"
+    description = "Security group for backend ALB"
+    vpc_id      = aws_vpc.vpc01.id
+
+    ingress {
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
     }
 
     egress {
@@ -80,6 +100,45 @@ resource "aws_security_group" "backend" {
 # Get RDS Secret
 data "aws_secretsmanager_secret_version" "rds_secret" {
     secret_id = aws_db_instance.default.master_user_secret[0].secret_arn
+}
+
+# Load Balancer Configuration
+resource "aws_lb" "backend" {
+    name               = "backend-alb"
+    internal           = true
+    load_balancer_type = "application"
+    security_groups    = [aws_security_group.backend_lb.id]
+    subnets            = aws_subnet.vpc01_private[*].id
+
+    enable_deletion_protection = false
+}
+
+resource "aws_lb_target_group" "backend" {
+    name        = "backend-tg"
+    port        = 3001
+    protocol    = "HTTP"
+    vpc_id      = aws_vpc.vpc01.id
+    target_type = "ip"
+
+    health_check {
+        path                = "/health"
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 3
+        interval            = 30
+        matcher            = "200"
+    }
+}
+
+resource "aws_lb_listener" "backend" {
+    load_balancer_arn = aws_lb.backend.arn
+    port              = 80
+    protocol          = "HTTP"
+
+    default_action {
+        type             = "forward"
+        target_group_arn = aws_lb_target_group.backend.arn
+    }
 }
 
 # Task Definition
@@ -145,16 +204,23 @@ resource "aws_ecs_service" "backend" {
     desired_count   = 1
     launch_type     = "FARGATE"
 
-
     network_configuration {
         subnets          = aws_subnet.vpc01_private[*].id
         security_groups  = [aws_security_group.backend.id]
         assign_public_ip = false
     }
 
+    load_balancer {
+        target_group_arn = aws_lb_target_group.backend.arn
+        container_name   = "backend"
+        container_port   = 3001
+    }
+
     service_registries {
         registry_arn = aws_service_discovery_service.backend.arn
     }
+
+    depends_on = [aws_lb_listener.backend]
 }
 
 # Auto scaling
@@ -181,4 +247,4 @@ resource "aws_appautoscaling_policy" "backend_scaling_policy" {
     scale_in_cooldown  = 300
     scale_out_cooldown = 300
   }
-} 
+}
