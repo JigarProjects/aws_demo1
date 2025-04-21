@@ -124,6 +124,19 @@ resource "aws_lb" "backend" {
     }
 }
 
+# Route53 Record for Backend ALB
+resource "aws_route53_record" "backend" {
+    zone_id = data.aws_route53_zone.main_domain.zone_id
+    name    = "backend.${var.domain_name}"
+    type    = "A"
+
+    alias {
+        name                   = aws_lb.backend.dns_name
+        zone_id                = aws_lb.backend.zone_id
+        evaluate_target_health = true
+    }
+}
+
 resource "aws_lb_target_group" "backend" {
     name        = "backend-tg"
     port        = 3001

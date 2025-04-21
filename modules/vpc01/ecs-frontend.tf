@@ -149,7 +149,7 @@ resource "aws_ecs_task_definition" "frontend" {
         environment = [
             {
                 name  = "MIDDLEWARE_URL"
-                value = "https://${aws_lb.backend.dns_name}"
+                value = "https://backend.${var.domain_name}"
             }
         ]
         logConfiguration = {
