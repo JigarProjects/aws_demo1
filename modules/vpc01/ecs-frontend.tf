@@ -53,6 +53,7 @@ resource "aws_security_group" "frontend" {
     }
 }
 
+# Allow HTTP and HTTPS traffic
 resource "aws_security_group" "alb" {
     name        = "frontend-alb-sg"
     description = "Security group for frontend ALB"
@@ -61,6 +62,13 @@ resource "aws_security_group" "alb" {
     ingress {
         from_port   = 80
         to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port   = 443
+        to_port     = 443
         protocol    = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
@@ -101,10 +109,14 @@ resource "aws_lb_target_group" "frontend" {
     }
 }
 
-resource "aws_lb_listener" "frontend" {
+
+# HTTPS Listener
+resource "aws_lb_listener" "frontend_https" {
     load_balancer_arn = aws_lb.frontend.arn
-    port              = 80
-    protocol          = "HTTP"
+    port              = 443
+    protocol          = "HTTPS"
+    ssl_policy        = "ELBSecurityPolicy-2016-08"
+    certificate_arn   = aws_acm_certificate.star_domain_cert.arn
 
     default_action {
         type             = "forward"
@@ -137,7 +149,7 @@ resource "aws_ecs_task_definition" "frontend" {
         environment = [
             {
                 name  = "MIDDLEWARE_URL"
-                value = "http://${aws_lb.backend.dns_name}:80"
+                value = "https://${aws_lb.backend.dns_name}"
             }
         ]
         logConfiguration = {
@@ -171,7 +183,32 @@ resource "aws_ecs_service" "frontend" {
         container_port   = 3000
     }
 
-    depends_on = [aws_lb_listener.frontend]
+    depends_on = [aws_lb_listener.frontend_https]
+}
+
+# Service Discovery Namespace
+resource "aws_service_discovery_private_dns_namespace" "main" {
+    name        = "vote.local"
+    description = "Private DNS namespace for ECS services"
+    vpc         = aws_vpc.vpc01.id
+}
+
+# Service Discovery for Backend
+resource "aws_service_discovery_service" "backend" {
+    name = "backend"
+
+    dns_config {
+        namespace_id = aws_service_discovery_private_dns_namespace.main.id
+        
+        dns_records {
+            ttl  = 10
+            type = "A"
+        }
+    }
+
+    health_check_custom_config {
+        failure_threshold = 1
+    }
 }
 
 # Auto scaling
@@ -199,3 +236,4 @@ resource "aws_appautoscaling_policy" "frontend_scaling_policy" {
     scale_out_cooldown = 300
   }
 }
+

@@ -39,3 +39,8 @@ variable "vpc02_public_subnets" {
     description = "List of CIDR blocks for VPC 02 public subnets"
     type = list(string)
 }
+
+variable "domain_name" {
+  description = "The domain name for the application"
+  type        = string
+}

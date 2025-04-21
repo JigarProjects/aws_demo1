@@ -1,3 +1,6 @@
+# for TLS
+domain_name             = "jigar.click"
+
 # app vpc
 vpc01_cidr              = "10.0.0.0/16"
 vpc01_private_subnets   = ["10.0.1.0/24", "10.0.10.0/24"]

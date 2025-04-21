@@ -22,3 +22,7 @@ variable "availability_zones" {
     description = "List of availability zones to use"
     type = list(string)
 }
+variable "domain_name" {
+  description = "The domain name for the application"
+  type        = string
+}

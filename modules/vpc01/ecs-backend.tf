@@ -89,6 +89,13 @@ resource "aws_security_group" "backend_lb" {
         cidr_blocks = ["0.0.0.0/0"]
     }
 
+    ingress {
+        from_port   = 443
+        to_port     = 443
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
     egress {
         from_port   = 0
         to_port     = 0
@@ -109,8 +116,12 @@ resource "aws_lb" "backend" {
     load_balancer_type = "application"
     security_groups    = [aws_security_group.backend_lb.id]
     subnets            = aws_subnet.vpc01_private[*].id
-
     enable_deletion_protection = false
+
+    tags = {
+        Name = "backend-alb"
+        Domain = var.domain_name
+    }
 }
 
 resource "aws_lb_target_group" "backend" {
@@ -130,10 +141,25 @@ resource "aws_lb_target_group" "backend" {
     }
 }
 
+# HTTP Listener
 resource "aws_lb_listener" "backend" {
     load_balancer_arn = aws_lb.backend.arn
     port              = 80
     protocol          = "HTTP"
+
+    default_action {
+        type             = "forward"
+        target_group_arn = aws_lb_target_group.backend.arn
+    }
+}
+
+# HTTPS Listener
+resource "aws_lb_listener" "backend_https" {
+    load_balancer_arn = aws_lb.backend.arn
+    port              = 443
+    protocol          = "HTTPS"
+    ssl_policy        = "ELBSecurityPolicy-2016-08"
+    certificate_arn   = aws_acm_certificate.star_domain_cert.arn
 
     default_action {
         type             = "forward"
@@ -214,6 +240,10 @@ resource "aws_ecs_service" "backend" {
         target_group_arn = aws_lb_target_group.backend.arn
         container_name   = "backend"
         container_port   = 3001
+    }
+
+    service_registries {
+        registry_arn = aws_service_discovery_service.backend.arn
     }
 
     depends_on = [aws_lb_listener.backend]
