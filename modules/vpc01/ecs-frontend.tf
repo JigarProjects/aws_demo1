@@ -137,7 +137,7 @@ resource "aws_ecs_task_definition" "frontend" {
         environment = [
             {
                 name  = "MIDDLEWARE_URL"
-                value = "http://${aws_service_discovery_service.backend.name}.${aws_service_discovery_private_dns_namespace.main.name}:3001"
+                value = "http://${aws_lb.backend.dns_name}:80"
             }
         ]
         logConfiguration = {
@@ -172,31 +172,6 @@ resource "aws_ecs_service" "frontend" {
     }
 
     depends_on = [aws_lb_listener.frontend]
-}
-
-# Service Discovery Namespace
-resource "aws_service_discovery_private_dns_namespace" "main" {
-    name        = "vote.local"
-    description = "Private DNS namespace for ECS services"
-    vpc         = aws_vpc.vpc01.id
-}
-
-# Service Discovery for Backend
-resource "aws_service_discovery_service" "backend" {
-    name = "backend"
-
-    dns_config {
-        namespace_id = aws_service_discovery_private_dns_namespace.main.id
-        
-        dns_records {
-            ttl  = 10
-            type = "A"
-        }
-    }
-
-    health_check_custom_config {
-        failure_threshold = 1
-    }
 }
 
 # Auto scaling

@@ -216,10 +216,6 @@ resource "aws_ecs_service" "backend" {
         container_port   = 3001
     }
 
-    service_registries {
-        registry_arn = aws_service_discovery_service.backend.arn
-    }
-
     depends_on = [aws_lb_listener.backend]
 }
 
