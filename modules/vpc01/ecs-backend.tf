@@ -253,7 +253,7 @@ resource "aws_ecs_service" "backend" {
     name            = "backend-service"
     cluster         = aws_ecs_cluster.backend_cluster.id
     task_definition = aws_ecs_task_definition.backend.arn
-    desired_count   = 1
+    desired_count   = 2
     launch_type     = "FARGATE"
 
     network_configuration {
@@ -268,8 +268,9 @@ resource "aws_ecs_service" "backend" {
         container_port   = 3001
     }
 
-    service_registries {
-        registry_arn = aws_service_discovery_service.backend.arn
+    ordered_placement_strategy {
+        type  = "spread"
+        field = "attribute:ecs.availability-zone"
     }
     deployment_circuit_breaker {
         enable = true

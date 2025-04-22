@@ -181,7 +181,7 @@ resource "aws_ecs_service" "frontend" {
     name            = "frontend-service"
     cluster         = aws_ecs_cluster.frontend_cluster.id
     task_definition = aws_ecs_task_definition.frontend.arn
-    desired_count   = 1
+    desired_count   = 2
     launch_type     = "FARGATE"
 
     network_configuration {
@@ -195,6 +195,12 @@ resource "aws_ecs_service" "frontend" {
         container_name   = "frontend"
         container_port   = 3000
     }
+
+    ordered_placement_strategy {
+        type  = "spread"
+        field = "attribute:ecs.availability-zone"
+    }
+
     deployment_circuit_breaker {
         enable = true
         rollback = true
