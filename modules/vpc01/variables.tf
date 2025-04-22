@@ -26,3 +26,11 @@ variable "domain_name" {
   description = "The domain name for the application"
   type        = string
 }
+variable "vpc02_cidr" {
+    description = "CIDR block of VPC02 for routing"
+    type        = string
+}
+variable "vpc_peering_connection_id" {
+    description = "ID of the VPC peering connection"
+    type        = string
+}

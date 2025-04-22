@@ -56,8 +56,13 @@ resource "aws_route_table" "vpc01_private" {
   vpc_id = aws_vpc.vpc01.id
 
   route {
-    cidr_block     = "0.0.0.0/0"
+    cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.vpc01.id
+  }
+
+  route {
+    cidr_block = var.vpc02_cidr
+    vpc_peering_connection_id = var.vpc_peering_connection_id
   }
 
   tags = {
@@ -103,4 +108,16 @@ resource "aws_route_table_association" "vpc01_private" {
   count          = length(var.private_subnets)
   subnet_id      = aws_subnet.vpc01_private[count.index].id
   route_table_id = aws_route_table.vpc01_private.id
+}
+
+# New Route Table for VPC02 Peering
+resource "aws_route_table" "rt_to_vpc02" {
+    vpc_id = aws_vpc.vpc01.id
+    route {
+        cidr_block                = var.vpc02_cidr
+        vpc_peering_connection_id = var.vpc_peering_connection_id
+    }
+    tags = {
+        Name = "rt_to_vpc02"
+    }
 }

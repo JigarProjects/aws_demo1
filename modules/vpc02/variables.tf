@@ -10,3 +10,13 @@ variable "availability_zones" {
     description = "List of availability zones to use"
     type = list(string)
 }
+
+variable "vpc01_id" {
+    description = "ID of VPC01 for peering connection"
+    type        = string
+}
+
+variable "vpc01_cidr" {
+    description = "CIDR block of VPC01 for routing"
+    type        = string
+}

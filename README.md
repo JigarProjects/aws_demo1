@@ -24,3 +24,7 @@ This Terraform configuration creates two VPCs.
 - **VPC-1**: Hosts the voting application. The application code is available at [vote_cats_dogs](https://github.com/JigarProjects/vote_cats_dogs).
 - **VPC-2**: To be continued
 
+#### TLS Security 
+
+- Register domain in AWS (route53)
+- Terrarofm can create certificate; also do validation using DNS
