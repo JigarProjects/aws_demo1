@@ -271,6 +271,10 @@ resource "aws_ecs_service" "backend" {
     service_registries {
         registry_arn = aws_service_discovery_service.backend.arn
     }
+    deployment_circuit_breaker {
+        enable = true
+        rollback = true
+    }
 
     depends_on = [aws_lb_listener.backend]
 }
