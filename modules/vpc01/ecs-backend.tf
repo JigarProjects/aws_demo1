@@ -63,6 +63,7 @@ resource "aws_security_group" "backend" {
     vpc_id      = aws_vpc.vpc01.id
 
     ingress {
+        description     = "Allow traffic from backend ALB on port 3001"
         from_port       = 3001
         to_port         = 3001
         protocol        = "tcp"
@@ -70,10 +71,15 @@ resource "aws_security_group" "backend" {
     }
 
     egress {
+        description = "Allow all outbound traffic"
         from_port   = 0
         to_port     = 0
         protocol    = "-1"
         cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags = {
+        Name = "backend-sg"
     }
 }
 
@@ -83,24 +89,31 @@ resource "aws_security_group" "backend_lb" {
     vpc_id      = aws_vpc.vpc01.id
 
     ingress {
+        description = "Allow HTTP traffic from frontend"
         from_port   = 80
         to_port     = 80
         protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
+        security_groups = [aws_security_group.frontend.id]
     }
 
     ingress {
+        description = "Allow HTTPS traffic from frontend"
         from_port   = 443
         to_port     = 443
         protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
+        security_groups = [aws_security_group.frontend.id]
     }
 
     egress {
+        description = "Allow all outbound traffic"
         from_port   = 0
         to_port     = 0
         protocol    = "-1"
         cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags = {
+        Name = "backend-lb-sg"
     }
 }
 
