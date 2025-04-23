@@ -14,6 +14,8 @@ module "vpc01" {
 
   frontend_max_capacity = var.frontend_max_capacity
   backend_max_capacity = var.backend_max_capacity
+  frontend_image       = var.frontend_image
+  backend_image        = var.backend_image
   
   db_initializer_image = var.db_initializer_image
   setup_database   = var.setup_database

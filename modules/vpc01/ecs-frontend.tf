@@ -153,7 +153,7 @@ resource "aws_ecs_task_definition" "frontend" {
 
     container_definitions = jsonencode([{
         name      = "frontend"
-        image     = "934433567703.dkr.ecr.us-east-1.amazonaws.com/vote-frontend:latest"
+        image     = var.frontend_image
         essential = true
         portMappings = [{
             containerPort = 3000

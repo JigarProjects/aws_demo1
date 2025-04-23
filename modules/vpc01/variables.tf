@@ -46,6 +46,16 @@ variable "backend_max_capacity" {
   description = "Maximum number of backend ECS tasks"
   type        = number
 }
+
+variable "frontend_image" {
+  description = "ECR image URI for frontend service"
+  type        = string
+}
+
+variable "backend_image" {
+  description = "ECR image URI for backend service"
+  type        = string
+}
 variable "db_initializer_image" {
   description = "Docker image for the database initializer task"
   type        = string

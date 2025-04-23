@@ -18,6 +18,10 @@ backend_max_capacity    = 4
 setup_database          = true
 db_initializer_image    = "public.ecr.aws/p3u0m5r4/jigar-demo/db-intializer:v2"
 
+# ECS images
+frontend_image         = "public.ecr.aws/p3u0m5r4/jigar-demo/vote-frontend:v1"
+backend_image          = "public.ecr.aws/p3u0m5r4/jigar-demo/vote-api:v1"
+
 # client vpc
 vpc02_cidr              = "11.0.0.0/16"
 vpc02_public_subnets    = ["11.0.2.0/24", "11.0.20.0/24"]

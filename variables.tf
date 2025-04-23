@@ -59,6 +59,16 @@ variable "backend_max_capacity" {
   type        = number
 }
 
+variable "frontend_image" {
+  description = "ECR image URI for frontend service"
+  type        = string
+}
+
+variable "backend_image" {
+  description = "ECR image URI for backend service"
+  type        = string
+}
+
 variable "db_initializer_image" {
   description = "ECR image URI for database initialization task"
   type        = string
