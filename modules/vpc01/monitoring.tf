@@ -92,23 +92,10 @@ resource "aws_cloudwatch_metric_alarm" "frontend_scaling_blocked" {
       }
     }
   }
-  metric_query {
-    id = "max_capacity"
-    metric {
-      metric_name = "MaxCapacity"
-      namespace   = "AWS/ECS"
-      period      = "300"
-      stat        = "Maximum"
-      dimensions = {
-        ClusterName = aws_ecs_cluster.frontend_cluster.name
-        ServiceName = aws_ecs_service.frontend.name
-      }
-    }
-  }
 
   metric_query {
     id          = "scaling_blocked"
-    expression  = "IF(cpu_utilization > 80 AND desired_tasks == 4, 1, 0)"
+    expression  = "IF(cpu_utilization > 80 AND desired_tasks == ${var.frontend_max_capacity}, 1, 0)"
     label       = "Scaling Blocked"
     return_data = "true"
   }
@@ -122,13 +109,13 @@ resource "aws_cloudwatch_metric_alarm" "backend_scaling_blocked" {
   evaluation_periods  = "2"
   threshold          = "1"
   alarm_actions      = [aws_sns_topic.alerts.arn]
-
+  
   metric_query {
     id = "cpu_utilization"
     metric {
       metric_name = "CPUUtilization"
       namespace   = "AWS/ECS"
-      period      = "300"
+      period      = 300
       stat        = "Average"
       dimensions = {
         ClusterName = aws_ecs_cluster.backend_cluster.name
@@ -153,11 +140,10 @@ resource "aws_cloudwatch_metric_alarm" "backend_scaling_blocked" {
 
   metric_query {
     id          = "scaling_blocked"
-    expression  = "IF(cpu_utilization > 80 AND desired_tasks == 4, 1, 0)"
+    expression  = "IF(cpu_utilization > 80 AND desired_tasks == ${var.backend_max_capacity}, 1, 0)"
     label       = "Scaling Blocked"
     return_data = "true"
   }
-
 }
 
 ##2 Load Balancer Health Alert

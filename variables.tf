@@ -49,3 +49,12 @@ variable "alert_email" {
   description = "Email address to receive alert notifications"
   type        = string
 }
+
+variable "frontend_max_capacity" {
+  description = "Maximum number of frontend ECS tasks"
+  type        = number
+}
+variable "backend_max_capacity" {
+  description = "Maximum number of backend ECS tasks"
+  type        = number
+}

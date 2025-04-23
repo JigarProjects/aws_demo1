@@ -10,6 +10,8 @@ module "vpc01" {
   vpc_peering_connection_id = module.vpc02.vpc_peering_connection_id
   domain_name     = var.domain_name
   alert_email     = var.alert_email
+  frontend_max_capacity = var.frontend_max_capacity
+  backend_max_capacity = var.backend_max_capacity
 }
 
 module "vpc02" {

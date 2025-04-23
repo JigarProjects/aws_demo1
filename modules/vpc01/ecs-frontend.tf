@@ -229,7 +229,7 @@ resource "aws_service_discovery_service" "backend" {
 
 # Auto scaling
 resource "aws_appautoscaling_target" "frontend_scaling_target" {
-  max_capacity       = 4
+  max_capacity       = var.frontend_max_capacity
   min_capacity       = 1
   resource_id        = "service/${aws_ecs_cluster.frontend_cluster.name}/${aws_ecs_service.frontend.name}"
   scalable_dimension = "ecs:service:DesiredCount"

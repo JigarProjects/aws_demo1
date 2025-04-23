@@ -281,7 +281,7 @@ resource "aws_ecs_service" "backend" {
 
 # Auto scaling
 resource "aws_appautoscaling_target" "backend_scaling_target" {
-  max_capacity       = 4
+  max_capacity       = var.backend_max_capacity
   min_capacity       = 1
   resource_id        = "service/${aws_ecs_cluster.backend_cluster.name}/${aws_ecs_service.backend.name}"
   scalable_dimension = "ecs:service:DesiredCount"
