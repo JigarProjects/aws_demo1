@@ -252,4 +252,15 @@ resource "aws_appautoscaling_policy" "frontend_scaling_policy" {
     scale_out_cooldown = 300
   }
 }
+# register ALB with Route53
+resource "aws_route53_record" "frontend" {
+  zone_id = data.aws_route53_zone.main_domain.zone_id
+  name    = "demo-app.${var.domain_name}"
+  type    = "A"
 
+  alias {
+    name                   = aws_lb.frontend.dns_name
+    zone_id                = aws_lb.frontend.zone_id
+    evaluate_target_health = true
+  }
+}

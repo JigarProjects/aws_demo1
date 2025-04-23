@@ -27,7 +27,7 @@ resource "aws_cloudwatch_metric_alarm" "frontend_cpu_throttling" {
   namespace           = "ECS/ContainerInsights"
   period              = 300
   statistic           = "Average"
-
+  
   dimensions = {
     ClusterName = aws_ecs_cluster.frontend_cluster.name
     ServiceName = aws_ecs_service.frontend.name
@@ -47,7 +47,7 @@ resource "aws_cloudwatch_metric_alarm" "backend_cpu_throttling" {
   namespace           = "ECS/ContainerInsights"
   period              = 300
   statistic           = "Average"
-
+  
   dimensions = {
     ClusterName = aws_ecs_cluster.backend_cluster.name
     ServiceName = aws_ecs_service.backend.name
@@ -371,7 +371,7 @@ resource "aws_cloudwatch_metric_alarm" "bastion_status" {
   dimensions = {
     InstanceId = aws_instance.bastion.id
   }
-}
+} 
 
 
 ##6 Certificate - Alert when cert will expire in a month

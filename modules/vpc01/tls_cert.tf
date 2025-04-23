@@ -27,9 +27,6 @@ resource "aws_route53_record" "dns_record_for_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  #name    = aws_acm_certificate.star_domain_cert.domain_validation_options[0].resource_record_name
-  #type    = aws_acm_certificate.star_domain_cert.domain_validation_options[0].resource_record_type
-  #records = [aws_acm_certificate.star_domain_cert.domain_validation_options[0].resource_record_value]
   zone_id = data.aws_route53_zone.main_domain.zone_id
 }
 
