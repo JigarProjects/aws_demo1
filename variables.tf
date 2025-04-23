@@ -58,3 +58,14 @@ variable "backend_max_capacity" {
   description = "Maximum number of backend ECS tasks"
   type        = number
 }
+
+variable "db_initializer_image" {
+  description = "ECR image URI for database initialization task"
+  type        = string
+}
+
+variable "setup_database" {
+  description = "Flag to determine if database initialization should be run"
+  type        = bool
+  default     = false
+}

@@ -185,7 +185,7 @@ resource "aws_cloudwatch_metric_alarm" "lb_target_response_time" {
 
 # HTTP 5XX Errors Alert - more than 10 (HTTP 500) in 5 min
 resource "aws_cloudwatch_metric_alarm" "lb_5xx_errors_frontend" {
-  alarm_name          = "LB-5XX-Errors"
+  alarm_name          = "LB-5XX-Errors-frontend"
   alarm_description   = "Alert when HTTP 5XX errors are high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "2"
@@ -202,7 +202,7 @@ resource "aws_cloudwatch_metric_alarm" "lb_5xx_errors_frontend" {
   }
 }
 resource "aws_cloudwatch_metric_alarm" "lb_5xx_errors_backend" {
-  alarm_name          = "LB-5XX-Errors"
+  alarm_name          = "LB-5XX-Errors-backend"
   alarm_description   = "Alert when HTTP 5XX errors are high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "2"
@@ -221,8 +221,8 @@ resource "aws_cloudwatch_metric_alarm" "lb_5xx_errors_backend" {
 
 
 # Unhealthy Host Count Alert
-resource "aws_cloudwatch_metric_alarm" "lb_unhealthy_hosts" {
-  alarm_name          = "LB-Unhealthy-Hosts"
+resource "aws_cloudwatch_metric_alarm" "lb_unhealthy_hosts-frontend" {
+  alarm_name          = "LB-Unhealthy-Hosts-frontend"
   alarm_description   = "Alert when number of unhealthy hosts is high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "2"
@@ -236,6 +236,23 @@ resource "aws_cloudwatch_metric_alarm" "lb_unhealthy_hosts" {
   dimensions = {
     LoadBalancer = aws_lb.frontend.arn_suffix
     TargetGroup  = aws_lb_target_group.frontend.arn_suffix
+  }
+}
+resource "aws_cloudwatch_metric_alarm" "lb_unhealthy_hosts-backend" {
+  alarm_name          = "LB-Unhealthy-Hosts-backend"
+  alarm_description   = "Alert when number of unhealthy hosts is high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "UnHealthyHostCount"
+  namespace           = "AWS/ApplicationELB"
+  period             = "300"
+  statistic          = "Maximum"
+  threshold          = "1"
+  alarm_actions      = [aws_sns_topic.alerts.arn]
+  
+  dimensions = {
+    LoadBalancer = aws_lb.backend.arn_suffix
+    TargetGroup  = aws_lb_target_group.backend.arn_suffix
   }
 }
 

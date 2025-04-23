@@ -31,6 +31,8 @@ This project provisions secure, scalable AWS infrastructure for a simple voting 
    ```bash
    terraform plan
    terraform apply
+
+   terraform apply -var="setup_database=true" #to setup databse 
    ```
 
 ## Project Structure
