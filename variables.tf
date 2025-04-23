@@ -44,3 +44,8 @@ variable "domain_name" {
   description = "The domain name for the application"
   type        = string
 }
+
+variable "alert_email" {
+  description = "Email address to receive alert notifications"
+  type        = string
+}

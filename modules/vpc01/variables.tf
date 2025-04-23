@@ -34,3 +34,7 @@ variable "vpc_peering_connection_id" {
     description = "ID of the VPC peering connection"
     type        = string
 }
+variable "alert_email" {
+  description = "Email address to receive alert notifications"
+  type        = string
+}

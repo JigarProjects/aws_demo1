@@ -9,6 +9,7 @@ module "vpc01" {
   vpc02_cidr      = var.vpc02_cidr
   vpc_peering_connection_id = module.vpc02.vpc_peering_connection_id
   domain_name     = var.domain_name
+  alert_email     = var.alert_email
 }
 
 module "vpc02" {

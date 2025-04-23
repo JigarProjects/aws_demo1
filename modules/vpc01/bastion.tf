@@ -64,13 +64,14 @@ resource "aws_instance" "bastion" {
         Name = "bastion-host"
     }
 
-    # Install SSM Agent and MySQL client
+    # Install SSM Agent, MySQL client and cloudwatch agent to get disk related info
     user_data = <<-EOF
         #!/bin/bash
         sudo yum update -y
         sudo yum install -y mysql
         sudo systemctl enable amazon-ssm-agent
         sudo systemctl start amazon-ssm-agent
+        sudo yum install -y amazon-cloudwatch-agent
     EOF
 }
 

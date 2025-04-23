@@ -65,12 +65,13 @@ resource "aws_instance" "bastion_vpc02" {
         Name = "bastion-vpc02"
     }
 
-    # Install SSM Agent and MySQL client
+    # Install SSM Agent, MySQL client
     user_data = <<-EOF
         #!/bin/bash
         sudo yum update -y
         sudo systemctl enable amazon-ssm-agent
         sudo systemctl start amazon-ssm-agent
+        sudo yum install -y amazon-cloudwatch-agent
     EOF
 }
 

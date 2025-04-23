@@ -11,3 +11,6 @@ availability_zones      = ["us-east-1a", "us-east-1b"]
 # client vpc
 vpc02_cidr              = "11.0.0.0/16"
 vpc02_public_subnets    = ["11.0.2.0/24", "11.0.20.0/24"]
+
+# monitoring
+alert_email             = "jigarOcp@gmail.com"
