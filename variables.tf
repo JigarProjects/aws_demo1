@@ -58,3 +58,8 @@ variable "backend_max_capacity" {
   description = "Maximum number of backend ECS tasks"
   type        = number
 }
+
+variable "db_executor_image" {
+  description = "ECR image URI for database migration Lambda function"
+  type        = string
+}

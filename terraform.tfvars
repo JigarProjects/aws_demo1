@@ -14,5 +14,6 @@ frontend_max_capacity   = 4
 backend_max_capacity    = 4
 
 # client vpc
+db_executor_image       = "public.ecr.aws/p3u0m5r4/jigar-vote-dbexecutor:latest"
 vpc02_cidr              = "11.0.0.0/16"
 vpc02_public_subnets    = ["11.0.2.0/24", "11.0.20.0/24"]

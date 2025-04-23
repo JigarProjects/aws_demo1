@@ -12,6 +12,7 @@ module "vpc01" {
   alert_email     = var.alert_email
   frontend_max_capacity = var.frontend_max_capacity
   backend_max_capacity = var.backend_max_capacity
+  db_executor_image    = var.db_executor_image
 }
 
 module "vpc02" {
