@@ -39,7 +39,7 @@ resource "aws_nat_gateway" "vpc01" {
   depends_on = [aws_internet_gateway.vpc01]
 }
 
-# -- Public Route Table
+# Public Route Table
 resource "aws_route_table" "vpc01_public" {
   vpc_id = aws_vpc.vpc01.id
 

@@ -1,4 +1,4 @@
-# -- Subnet for DB
+# Subnet for DB
 resource "aws_subnet" "vpc01_db_az1" {
   vpc_id                  = aws_vpc.vpc01.id
   cidr_block              = var.db_subnets[0]
@@ -21,7 +21,7 @@ resource "aws_subnet" "vpc01_db_az2" {
   }
 }
 
-# -- Subnetgroup for DB
+# Subnetgroup for DB
 resource "aws_db_subnet_group" "default" {
     name       = "vpc01-db-subnet-group"
     subnet_ids = [aws_subnet.vpc01_db_az1.id, aws_subnet.vpc01_db_az2.id]
@@ -30,7 +30,7 @@ resource "aws_db_subnet_group" "default" {
     }
 }
 
-# -- Security Group for DB
+# Security Group for DB
 resource "aws_security_group" "db" {
     name        = "db"
     description = "Allow access to DB"
@@ -57,7 +57,7 @@ resource "aws_security_group" "db" {
     }
 }
 
-# --- RDS Instance - password managed by Secrets Manager default KMS key
+# RDS Instance - password managed by Secrets Manager default KMS key
 resource "aws_db_instance" "default" {
     allocated_storage   = 10
     engine              = "mysql"
@@ -76,7 +76,7 @@ resource "aws_db_instance" "default" {
     multi_az            = true
 }
 
-# -- Output the RDS endpoint for reference
+# Output the RDS endpoint for reference
 output "rds_endpoint" {
     value = aws_db_instance.default.endpoint
 }

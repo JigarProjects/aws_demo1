@@ -40,19 +40,19 @@ resource "aws_iam_role" "ssm_role" {
     })
 }
 
-# -- Attach SSM policy to the role
+# Attach SSM policy to the role
 resource "aws_iam_role_policy_attachment" "ssm_policy" {
     role       = aws_iam_role.ssm_role.name
     policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-# -- Instance Profile for SSM
+# Instance Profile for SSM
 resource "aws_iam_instance_profile" "ssm_profile" {
     name = "ssm-profile"
     role = aws_iam_role.ssm_role.name
 }
 
-# -- Bastion Host EC2 Instance
+# Bastion Host EC2 Instance
 resource "aws_instance" "bastion" {
     ami                    = "ami-07a6f770277670015" # Amazon Linux 2
     instance_type          = "t2.micro"
