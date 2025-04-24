@@ -199,9 +199,6 @@ resource "aws_cloudwatch_metric_alarm" "db_connections" {
   }
 }
 
-##4 ECS Task Failure Monitoring - 3 or more frontend tasks fail in 15 min
-
-
 ##5 EC2 Infrastructure Monitoring
 # Bastion Host CPU Utilization over 80%
 resource "aws_cloudwatch_metric_alarm" "bastion_cpu" {
@@ -257,3 +254,19 @@ resource "aws_cloudwatch_metric_alarm" "certificate_expiry" {
   }
 }
 
+
+resource "aws_budgets_budget" "monthly_budget" {
+  name              = "MyBudget"
+  budget_type       = "COST"
+  limit_amount      = "100.00"
+  limit_unit        = "USD"
+  time_unit         = "MONTHLY"
+
+  notification {
+    comparison_operator = "GREATER_THAN"
+    threshold           = 80
+    threshold_type      = "PERCENTAGE"
+    notification_type   = "ACTUAL"
+    subscriber_sns_topic_arns = [aws_sns_topic.alerts.arn]
+  }
+}
