@@ -64,7 +64,7 @@ resource "aws_instance" "bastion_vpc02" {
     tags = {
         Name = "bastion-vpc02"
     }
-
+    
     # Install SSM Agent, MySQL client
     user_data = <<-EOF
         #!/bin/bash

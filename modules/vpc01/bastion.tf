@@ -1,4 +1,4 @@
-# -- Security Group for Bastion Host
+# Security Group for Bastion Host
 resource "aws_security_group" "bastion" {
     name        = "bastion"
     description = "Allow SSH and Session Manager access to bastion host"
@@ -22,7 +22,7 @@ resource "aws_security_group" "bastion" {
     }
 }
 
-# -- IAM Role for Session Manager
+# IAM Role for Session Manager
 resource "aws_iam_role" "ssm_role" {
     name = "ssm-role"
 

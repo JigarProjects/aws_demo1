@@ -15,7 +15,7 @@ frontend_max_capacity   = 4
 backend_max_capacity    = 4
 
 # Initlize DB
-setup_database          = true
+setup_database          = false
 db_initializer_image    = "public.ecr.aws/p3u0m5r4/jigar-demo/db-intializer:v2"
 
 # ECS images

@@ -9,7 +9,7 @@ resource "aws_vpc" "vpc01" {
   }
 }
 
-# -- Internet Gateway
+# Internet Gateway
 resource "aws_internet_gateway" "vpc01" {
   vpc_id = aws_vpc.vpc01.id
 
@@ -47,6 +47,12 @@ resource "aws_route_table" "vpc01_public" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.vpc01.id
   }
+  
+  // Add peering route for VPC02 CIDR
+  route {
+    cidr_block                = var.vpc02_cidr
+    vpc_peering_connection_id = var.vpc_peering_connection_id
+  }
 
   tags = {
     Name = "vpc01-public-rt"
@@ -73,7 +79,7 @@ resource "aws_route_table" "vpc01_private" {
   }
 }
 
-# -- Public Subnets
+# Public Subnets
 resource "aws_subnet" "vpc01_public" {
   count                   = length(var.public_subnets)
   vpc_id                  = aws_vpc.vpc01.id
@@ -86,14 +92,14 @@ resource "aws_subnet" "vpc01_public" {
   }
 }
 
-# -- Associate Public Route Table with Public Subnets
+# Associate Public Route Table with Public Subnets
 resource "aws_route_table_association" "vpc01_public" {
   count          = length(var.public_subnets)
   subnet_id      = aws_subnet.vpc01_public[count.index].id
   route_table_id = aws_route_table.vpc01_public.id
 }
 
-# -- Private Subnets
+# Private Subnets
 resource "aws_subnet" "vpc01_private" {
   count                   = length(var.private_subnets)
   vpc_id                  = aws_vpc.vpc01.id

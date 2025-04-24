@@ -1,6 +1,5 @@
 # DB Initializer Task Definition
 resource "aws_ecs_task_definition" "db_initializer" {
-  count = var.setup_database ? 1 : 0
 
   family                   = "db-initializer"
   network_mode             = "awsvpc"
@@ -61,7 +60,7 @@ resource "null_resource" "setup_db_task" {
 
   triggers = {
     rds_endpoint = aws_db_instance.default.endpoint
-    task_definition = aws_ecs_task_definition.db_initializer[0].revision
+    task_definition = aws_ecs_task_definition.db_initializer.revision
     force_run = var.setup_database ? timestamp() : ""
   }
 
@@ -69,7 +68,7 @@ resource "null_resource" "setup_db_task" {
     command = <<EOT
       aws ecs run-task \
         --cluster ${aws_ecs_cluster.backend_cluster.name} \
-        --task-definition ${aws_ecs_task_definition.db_initializer[0].family}:${aws_ecs_task_definition.db_initializer[0].revision} \
+        --task-definition ${aws_ecs_task_definition.db_initializer.family}:${aws_ecs_task_definition.db_initializer.revision} \
         --launch-type FARGATE \
         --network-configuration "awsvpcConfiguration={subnets=[${join(",", aws_subnet.vpc01_private[*].id)}],securityGroups=[${aws_security_group.backend.id}],assignPublicIp=DISABLED}" \
         --count 1
@@ -79,6 +78,6 @@ resource "null_resource" "setup_db_task" {
   depends_on = [
     aws_db_instance.default,
     aws_ecs_cluster.backend_cluster,
-    aws_ecs_task_definition.db_initializer[0]
+    aws_ecs_task_definition.db_initializer
   ]
 }
