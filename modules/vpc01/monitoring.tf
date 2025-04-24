@@ -16,49 +16,10 @@ resource "aws_sns_topic_subscription" "alerts_subscription" {
   endpoint  = var.alert_email
 }
 
-# Frontend CPU Throttling Alert
-resource "aws_cloudwatch_metric_alarm" "frontend_cpu_throttling" {
-  alarm_name          = "Frontend-ECS-Task-CPU-Throttling"
-  alarm_description   = "Potential CPU throttling detected in frontend ECS tasks"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 2
-  threshold           = 90
-  metric_name         = "CPUUtilized"
-  namespace           = "ECS/ContainerInsights"
-  period              = 300
-  statistic           = "Average"
-  
-  dimensions = {
-    ClusterName = aws_ecs_cluster.frontend_cluster.name
-    ServiceName = aws_ecs_service.frontend.name
-  }
-
-  alarm_actions = [aws_sns_topic.alerts.arn]
-}
-
-# Backend CPU Throttling Alert
-resource "aws_cloudwatch_metric_alarm" "backend_cpu_throttling" {
-  alarm_name          = "Backend-ECS-Task-CPU-Throttling"
-  alarm_description   = "Potential CPU throttling detected in backend ECS tasks"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 2
-  threshold           = 90
-  metric_name         = "CPUUtilized"
-  namespace           = "ECS/ContainerInsights"
-  period              = 300
-  statistic           = "Average"
-  
-  dimensions = {
-    ClusterName = aws_ecs_cluster.backend_cluster.name
-    ServiceName = aws_ecs_service.backend.name
-  }
-
-  alarm_actions = [aws_sns_topic.alerts.arn]
-}
-
+# 1 ECS
 # Frontend Service - Scaling Blocked Alert
 resource "aws_cloudwatch_metric_alarm" "frontend_scaling_blocked" {
-  alarm_name          = "Frontend-ECS-Scaling-Blocked"
+  alarm_name          = "front-ECS-Scaling-Blocked"
   alarm_description   = "Alarm when frontend ECS is at max capacity and CPU is high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "2"
@@ -103,7 +64,7 @@ resource "aws_cloudwatch_metric_alarm" "frontend_scaling_blocked" {
 
 # Backend - Scaling Blocked Alert
 resource "aws_cloudwatch_metric_alarm" "backend_scaling_blocked" {
-  alarm_name          = "Backend-ECS-Scaling-Blocked"
+  alarm_name          = "back-ECS-Scaling-Blocked"
   alarm_description   = "Alarm when backend ECS is at max capacity and CPU is high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "2"
@@ -147,8 +108,8 @@ resource "aws_cloudwatch_metric_alarm" "backend_scaling_blocked" {
 }
 
 ##2 Load Balancer Health Alert
-resource "aws_cloudwatch_metric_alarm" "load_balancer_health" {
-  alarm_name          = "LoadBalancerHealth"
+resource "aws_cloudwatch_metric_alarm" "front-load_balancer_health" {
+  alarm_name          = "front-LoadBalancerHealth"
   alarm_description  = "Alert when load balancer has no healthy hosts"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "2"
@@ -164,89 +125,15 @@ resource "aws_cloudwatch_metric_alarm" "load_balancer_health" {
     TargetGroup  = aws_lb_target_group.frontend.arn_suffix
   }
 }
-# Target Response Time Alert
-resource "aws_cloudwatch_metric_alarm" "lb_target_response_time" {
-  alarm_name          = "LB-Target-Response-Time"
-  alarm_description   = "Alert when target response time is high"
-  comparison_operator = "GreaterThanThreshold"
+resource "aws_cloudwatch_metric_alarm" "back-load_balancer_health" {
+  alarm_name          = "back-LoadBalancerHealth"
+  alarm_description  = "Alert when load balancer has no healthy hosts"
+  comparison_operator = "LessThanThreshold"
   evaluation_periods  = "2"
-  metric_name         = "TargetResponseTime"
+  metric_name         = "HealthyHostCount"
   namespace           = "AWS/ApplicationELB"
   period             = "300"
-  statistic          = "Average"
-  threshold          = "2"
-  alarm_actions      = [aws_sns_topic.alerts.arn]
-  
-  dimensions = {
-    LoadBalancer = aws_lb.frontend.arn_suffix
-    TargetGroup  = aws_lb_target_group.frontend.arn_suffix
-  }
-}
-
-# HTTP 5XX Errors Alert - more than 10 (HTTP 500) in 5 min
-resource "aws_cloudwatch_metric_alarm" "lb_5xx_errors_frontend" {
-  alarm_name          = "LB-5XX-Errors-frontend"
-  alarm_description   = "Alert when HTTP 5XX errors are high"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "HTTPCode_Target_5XX_Count"
-  namespace           = "AWS/ApplicationELB"
-  period             = "300"
-  statistic          = "Sum"
-  threshold          = "10"
-  alarm_actions      = [aws_sns_topic.alerts.arn]  
-
-  dimensions = {
-    LoadBalancer = aws_lb.frontend.arn_suffix
-    TargetGroup  = aws_lb_target_group.frontend.arn_suffix
-  }
-}
-resource "aws_cloudwatch_metric_alarm" "lb_5xx_errors_backend" {
-  alarm_name          = "LB-5XX-Errors-backend"
-  alarm_description   = "Alert when HTTP 5XX errors are high"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "HTTPCode_Target_5XX_Count"
-  namespace           = "AWS/ApplicationELB"
-  period             = "300"
-  statistic          = "Sum"
-  threshold          = "10"
-  alarm_actions      = [aws_sns_topic.alerts.arn]  
-
-  dimensions = {
-    LoadBalancer = aws_lb.backend.arn_suffix
-    TargetGroup  = aws_lb_target_group.backend.arn_suffix
-  }
-}
-
-
-# Unhealthy Host Count Alert
-resource "aws_cloudwatch_metric_alarm" "lb_unhealthy_hosts-frontend" {
-  alarm_name          = "LB-Unhealthy-Hosts-frontend"
-  alarm_description   = "Alert when number of unhealthy hosts is high"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "UnHealthyHostCount"
-  namespace           = "AWS/ApplicationELB"
-  period             = "300"
-  statistic          = "Maximum"
-  threshold          = "1"
-  alarm_actions      = [aws_sns_topic.alerts.arn]
-  
-  dimensions = {
-    LoadBalancer = aws_lb.frontend.arn_suffix
-    TargetGroup  = aws_lb_target_group.frontend.arn_suffix
-  }
-}
-resource "aws_cloudwatch_metric_alarm" "lb_unhealthy_hosts-backend" {
-  alarm_name          = "LB-Unhealthy-Hosts-backend"
-  alarm_description   = "Alert when number of unhealthy hosts is high"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "UnHealthyHostCount"
-  namespace           = "AWS/ApplicationELB"
-  period             = "300"
-  statistic          = "Maximum"
+  statistic          = "Minimum"
   threshold          = "1"
   alarm_actions      = [aws_sns_topic.alerts.arn]
   
@@ -313,44 +200,6 @@ resource "aws_cloudwatch_metric_alarm" "db_connections" {
 }
 
 ##4 ECS Task Failure Monitoring - 3 or more frontend tasks fail in 15 min
-# Frontend Task Failure Alert
-resource "aws_cloudwatch_metric_alarm" "frontend_task_failures" {
-  alarm_name          = "Frontend-Task-Failures"
-  alarm_description   = "Alert when frontend tasks are failing repeatedly"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "3"
-  metric_name         = "StoppedTaskCount"
-  namespace           = "AWS/ECS"
-  period             = "300"
-  statistic          = "Sum"
-  threshold          = "3"
-  alarm_actions      = [aws_sns_topic.alerts.arn]
-  
-  dimensions = {
-    ClusterName = aws_ecs_cluster.frontend_cluster.name
-    ServiceName = aws_ecs_service.frontend.name
-  }
-}
-
-# Backend Task Failure Alert - 3 or more backend tasks fail in 15 min
-resource "aws_cloudwatch_metric_alarm" "backend_task_failures" {
-  alarm_name          = "Backend-Task-Failures"
-  alarm_description   = "Alert when backend tasks are failing repeatedly"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "3"
-  metric_name         = "StoppedTaskCount"
-  namespace           = "AWS/ECS"
-  period             = "300"
-  statistic          = "Sum"
-  threshold          = "3"
-  alarm_actions      = [aws_sns_topic.alerts.arn]
-  
-  dimensions = {
-    ClusterName = aws_ecs_cluster.backend_cluster.name
-    ServiceName = aws_ecs_service.backend.name
-  }
-}
-
 
 
 ##5 EC2 Infrastructure Monitoring
