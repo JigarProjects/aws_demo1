@@ -1,5 +1,6 @@
 # for TLS
-domain_name             = "jigar.click"
+#domain_name             = "jigar.click"
+domain_name             = ""
 # monitoring
 alert_email             = "jigarOcp@gmail.com"
 

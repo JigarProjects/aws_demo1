@@ -79,7 +79,7 @@ resource "aws_security_group" "alb" {
         to_port     = 443
         protocol    = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
-    }
+      }
 
     egress {
         description = "Allow all outbound traffic"
@@ -125,11 +125,26 @@ resource "aws_lb_target_group" "frontend" {
 
 # HTTPS Listener
 resource "aws_lb_listener" "frontend_https" {
+    count = var.enable_tls ? 1 : 0
+
     load_balancer_arn = aws_lb.frontend.arn
     port              = 443
     protocol          = "HTTPS"
     ssl_policy        = "ELBSecurityPolicy-2016-08"
-    certificate_arn   = aws_acm_certificate.star_domain_cert.arn
+    certificate_arn   = var.enable_tls ? aws_acm_certificate.star_domain_cert.arn : ""
+
+    default_action {
+        type             = "forward"
+        target_group_arn = aws_lb_target_group.frontend.arn
+    }
+}
+
+resource "aws_lb_listener" "frontend_http" {
+    count = var.enable_tls ? 0 : 1
+
+    load_balancer_arn = aws_lb.frontend.arn
+    port              = 80
+    protocol          = "HTTP"
 
     default_action {
         type             = "forward"
@@ -162,7 +177,9 @@ resource "aws_ecs_task_definition" "frontend" {
         environment = [
             {
                 name  = "MIDDLEWARE_URL"
-                value = "https://backend.${var.domain_name}"
+                value = (var.enable_tls && length(var.domain_name) > 0) ? 
+                    "https://backend.${var.domain_name}" : 
+                    "http://${aws_lb.backend.dns_name}"
             }
         ]
         logConfiguration = {
@@ -175,6 +192,7 @@ resource "aws_ecs_task_definition" "frontend" {
         }
     }])
 }
+
 
 # Service Configuration
 resource "aws_ecs_service" "frontend" {
@@ -199,7 +217,7 @@ resource "aws_ecs_service" "frontend" {
         enable = true
         rollback = true
     }
-    depends_on = [aws_lb_listener.frontend_https]
+    depends_on = [aws_lb_listener.frontend_https, aws_lb_listener.frontend_http]
 }
 
 # Service Discovery Namespace
@@ -252,15 +270,17 @@ resource "aws_appautoscaling_policy" "frontend_scaling_policy" {
     scale_out_cooldown = 300
   }
 }
-# register ALB with Route53
+# register ALB with Route53 - only create if domain_name is provided and TLS is enabled
 resource "aws_route53_record" "frontend" {
-  zone_id = data.aws_route53_zone.main_domain.zone_id
-  name    = "demo-app.${var.domain_name}"
-  type    = "A"
+    count = (var.enable_tls && length(var.domain_name) > 0) ? 1 : 0
+    
+    zone_id = data.aws_route53_zone.main_domain.zone_id
+    name    = "demo-app.${var.domain_name}"
+    type    = "A"
 
-  alias {
-    name                   = aws_lb.frontend.dns_name
-    zone_id                = aws_lb.frontend.zone_id
-    evaluate_target_health = true
-  }
+    alias {
+        name                   = aws_lb.frontend.dns_name
+        zone_id                = aws_lb.frontend.zone_id
+        evaluate_target_health = true
+    }
 }

@@ -69,6 +69,11 @@ variable "backend_image" {
   type        = string
 }
 
+variable "enable_tls" {
+  description = "Enable TLS termination for ALB listeners"
+  type        = bool
+}
+
 variable "db_initializer_image" {
   description = "ECR image URI for database initialization task"
   type        = string

@@ -23,8 +23,13 @@ variable "availability_zones" {
     type = list(string)
 }
 variable "domain_name" {
-  description = "The domain name for the application"
+  description = "The domain name for the application (required if enable_tls is true)"
   type        = string
+  default     = ""
+  validation {
+    condition     = var.enable_tls ? length(var.domain_name) > 0 : true
+    error_message = "Domain name is required when enable_tls is true"
+  }
 }
 variable "vpc02_cidr" {
     description = "CIDR block of VPC02 for routing"
@@ -56,6 +61,7 @@ variable "backend_image" {
   description = "ECR image URI for backend service"
   type        = string
 }
+
 variable "db_initializer_image" {
   description = "Docker image for the database initializer task"
   type        = string
@@ -64,4 +70,5 @@ variable "db_initializer_image" {
 variable "setup_database" {
   description = "Flag to determine if database initialization should be run"
   type        = bool
+  default     = false
 }

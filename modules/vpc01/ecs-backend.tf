@@ -102,7 +102,7 @@ resource "aws_security_group" "backend_lb" {
         to_port     = 443
         protocol    = "tcp"
         security_groups = [aws_security_group.frontend.id]
-    }
+      }
 
     egress {
         description = "Allow all outbound traffic"
@@ -137,8 +137,10 @@ resource "aws_lb" "backend" {
     }
 }
 
-# Route53 Record for Backend ALB
+# Route53 Record for Backend ALB - only create if domain_name is provided and TLS is enabled
 resource "aws_route53_record" "backend" {
+    count = (var.enable_tls && length(var.domain_name) > 0) ? 1 : 0
+    
     zone_id = data.aws_route53_zone.main_domain.zone_id
     name    = "backend.${var.domain_name}"
     type    = "A"
@@ -181,11 +183,26 @@ resource "aws_lb_listener" "backend" {
 
 # HTTPS Listener
 resource "aws_lb_listener" "backend_https" {
+    count = var.enable_tls ? 1 : 0
+
     load_balancer_arn = aws_lb.backend.arn
     port              = 443
     protocol          = "HTTPS"
     ssl_policy        = "ELBSecurityPolicy-2016-08"
-    certificate_arn   = aws_acm_certificate.star_domain_cert.arn
+    certificate_arn   = var.enable_tls ? aws_acm_certificate.star_domain_cert.arn : ""
+
+    default_action {
+        type             = "forward"
+        target_group_arn = aws_lb_target_group.backend.arn
+    }
+}
+
+resource "aws_lb_listener" "backend_http" {
+    count = var.enable_tls ? 0 : 1
+
+    load_balancer_arn = aws_lb.backend.arn
+    port              = 80
+    protocol          = "HTTP"
 
     default_action {
         type             = "forward"
@@ -215,14 +232,6 @@ resource "aws_ecs_task_definition" "backend" {
             containerPort = 3001
             protocol      = "tcp"
         }]
-        logConfiguration = {
-            logDriver = "awslogs"
-            options = {
-                "awslogs-group"         = aws_cloudwatch_log_group.backend.name
-                "awslogs-region"        = "us-east-1"
-                "awslogs-stream-prefix" = "ecs"
-            }
-        }
         environment = [
             {
                 name  = "DB_USER"
@@ -245,6 +254,14 @@ resource "aws_ecs_task_definition" "backend" {
                 value = aws_db_instance.default.master_user_secret[0].secret_arn
             }
         ]
+        logConfiguration = {
+            logDriver = "awslogs"
+            options = {
+                "awslogs-group"         = aws_cloudwatch_log_group.backend.name
+                "awslogs-region"        = "us-east-1"
+                "awslogs-stream-prefix" = "ecs"
+            }
+        }
     }])
 }
 
@@ -267,16 +284,11 @@ resource "aws_ecs_service" "backend" {
         container_name   = "backend"
         container_port   = 3001
     }
-
-    service_registries {
-        registry_arn = aws_service_discovery_service.backend.arn
-    }
     deployment_circuit_breaker {
         enable = true
         rollback = true
     }
-
-    depends_on = [aws_lb_listener.backend]
+    depends_on = [aws_lb_listener.backend_https, aws_lb_listener.backend_http]
 }
 
 # Auto scaling

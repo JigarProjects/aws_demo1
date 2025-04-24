@@ -11,6 +11,7 @@ module "vpc01" {
 
   domain_name     = var.domain_name
   alert_email     = var.alert_email
+  enable_tls      = var.enable_tls
 
   frontend_max_capacity = var.frontend_max_capacity
   backend_max_capacity = var.backend_max_capacity
